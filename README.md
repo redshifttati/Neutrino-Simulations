@@ -1,54 +1,86 @@
 # Neutrino Simulations — Láscar Volcano
 
-Monte Carlo simulations and analysis of neutrino fluxes and interactions associated with the Láscar volcano in northern Chile.
+Monte Carlo simulations of atmospheric neutrino interactions and secondary muon production for studies associated with the Láscar volcano in northern Chile.
 
-## Overview
+## 1. Overview
 
-This repository documents a computational study involving neutrino simulations and the analysis of particle distributions using FLUKA, GENIE, and Python.
+This repository documents a computational study aimed at generating secondary muons from atmospheric neutrino interactions and preparing their kinematic distributions for future particle transport simulations in a volcanic environment.
 
-The project aims to organize the simulation configurations, computational tools, and analysis workflows used in the study.
+The current workflow uses atmospheric neutrino flux calculations by Honda and collaborators, the GENIE neutrino event generator, and Python-based analysis tools.
 
-## Simulation Tools
+The longer-term objective is to study muon propagation through the geological environment of the Láscar volcano.
 
-### FLUKA
+## 2. Atmospheric Neutrino Flux
 
-FLUKA is a Monte Carlo simulation code used to model particle transport and interactions with matter.
+The atmospheric neutrino flux is obtained from the calculations by Honda and collaborators for the Kamioka site in Japan.
 
-The `FLUKA/` directory is intended to contain the original simulation inputs, configurations, and associated documentation.
+The flux is used as an initial approximation rather than a location-specific prediction for the Láscar volcano.
 
-### GENIE
+The initial study considers upward-going muon neutrinos, with flux information provided as a function of neutrino energy and zenith angle.
 
-GENIE is a Monte Carlo event generator designed for neutrino interactions.
+The original data source is:
 
-The `GENIE/` directory is intended to contain simulation configurations and scripts associated with neutrino event generation.
+http://www-rccn.icrr.u-tokyo.ac.jp/mhonda/public/
 
-### Python Analysis
+Processed flux tables are documented in `data/processed/`.
 
-Python is used to inspect ROOT files, process simulation outputs, and visualize particle distributions.
+## 3. Flux Preparation
 
-The analysis uses libraries including:
+The atmospheric neutrino flux is processed to construct an energy-dependent input histogram for GENIE.
 
-- NumPy
-- Pandas
-- Matplotlib
-- uproot
-- Awkward Array
+The following files are used:
 
-## Repository Structure
+- `up_numuflux.csv`: intermediate flux table.
+- `up_numuflux_clean.csv`: processed flux table.
+- `make_flux.C`: ROOT macro for flux histogram generation.
+- `make_flux_root.C`: ROOT macro producing the GENIE-compatible flux histogram.
+
+The final ROOT histogram is named `numu` and is stored in `flux_numu_rootnative.root`.
+
+## 4. GENIE Event Generation
+
+GENIE is used to simulate neutrino interactions with oxygen-16 nuclei.
+
+The example simulation configuration uses:
+
+- Incident particle: muon neutrino (PDG 14).
+- Nuclear target: oxygen-16 (PDG 1000080160).
+- Neutrino energy range: 0.1–999 GeV.
+- Example event count: 100,000.
+
+The GENIE GHEP output is subsequently converted into a simplified ROOT format using `read_genie_convert_root.cc`.
+
+## 5. Secondary Muon Analysis
+
+The analysis focuses on secondary muons produced in neutrino interactions.
+
+Relevant quantities include:
+
+- Muon energy.
+- Momentum components.
+- Propagation direction.
+- Final-state particle identification.
+
+The notebook `analysis/notebooks/output_genie_numuflux_uproot.ipynb` contains Python-based analysis and visualization tools.
+
+## 6. Repository Structure
 
 ```text
 Neutrino-Simulations/
 ├── FLUKA/
 ├── GENIE/
+│   └── scripts/
 ├── analysis/
 │   └── notebooks/
-│       └── output_genie_numuflux_uproot.ipynb
-├── .gitignore
+├── data/
+│   └── processed/
+├── docs/
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── .gitignore
 ```
 
-## Installation
+## 7. Installation
 
 Clone the repository:
 
@@ -63,24 +95,30 @@ Install the Python dependencies:
 pip install -r requirements.txt
 ```
 
-## Running the Analysis
-
 Launch Jupyter:
 
 ```bash
 jupyter lab
 ```
 
-Open:
+Open `analysis/notebooks/output_genie_numuflux_uproot.ipynb`.
 
-`analysis/notebooks/output_genie_numuflux_uproot.ipynb`
+Some analyses require external ROOT input files that are not included in the repository.
 
-The notebook requires the corresponding ROOT input files, which are not included in this repository.
+## 8. Current Status and Future Work
 
-## Reproducibility
+The GENIE-based workflow provides an initial sample of secondary muon kinematics.
 
-The original simulation configurations, input datasets, software versions, and methodological details will be documented as they are recovered and incorporated.
+The following steps remain to be developed or fully documented:
 
-## Documentation
+- Verification of the atmospheric flux preparation and angular normalization.
+- Incorporation of original FLUKA simulation configurations.
+- Implementation and documentation of the volcanic geometry and detector in Geant4.
+- Assignment of neutrino interaction vertices within the relevant geometry.
+- Propagation of secondary muons through the volcanic environment.
 
-Additional technical documentation and simulation results will be added as the project is organized.
+## 9. References
+
+1. T. K. Gaisser and M. Honda, *Flux of Atmospheric Neutrinos*, Annual Review of Nuclear and Particle Science **52**, 153–199 (2002).
+2. M. Honda et al., *Atmospheric neutrino flux calculation using the NRLMSISE-00 atmospheric model*, Physical Review D **92**, 023004 (2015).
+3. C. Andreopoulos et al., *The GENIE Neutrino Monte Carlo Generator: Physics and User Manual*, arXiv:1510.05494.
